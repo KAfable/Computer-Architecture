@@ -77,7 +77,6 @@ general-purpose registers.
 > ```
 
 Also add properties for any internal registers you need, e.g. `PC`.
-
 Later on, you might do further initialization here, e.g. setting the initial
 value of the stack pointer.
 
