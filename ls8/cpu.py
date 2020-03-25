@@ -2,6 +2,11 @@
 
 import sys
 
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+MUL = 0b10100010
+
 
 class CPU:
     """Main CPU class."""
@@ -12,6 +17,31 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.branchtable = {}
+        self.branchtable[HLT] = self.handle_HLT
+        self.branchtable[LDI] = self.handle_LDI
+        self.branchtable[PRN] = self.handle_PRN
+        self.branchtable[MUL] = self.handle_MUL
+
+    def handle_HLT(self):
+        sys.exit(0)
+
+    def handle_LDI(self):
+        register = self.ram_read(self.pc + 1)
+        value = self.ram_read(self.pc + 2)
+        self.reg[register] = value
+        self.pc += 3
+
+    def handle_PRN(self):
+        reg = self.ram_read(self.pc+1)
+        print(self.reg[reg])
+        self.pc += 2
+
+    def handle_MUL(self):
+        register = self.ram_read(self.pc + 1)
+        register2 = self.ram_read(self.pc + 2)
+        self.reg[register] *= self.reg[register2]
+        self.pc += 3
 
     def load(self):
         """Load a program into memory."""
@@ -23,9 +53,18 @@ class CPU:
 
         # open the file
         filename = sys.argv[1]
-        with open(filename) as program:
-            for address, instruction in enumerate(program):
-                self.ram[address] = instruction
+        try:
+            with open(filename) as program:
+                for address, line in enumerate(program):
+                    # ignore anything after # comments
+                    instruction = line.split('#')[0].strip()
+                    if instruction == '':
+                        continue
+                    else:
+                        self.ram[address] = int(f"0b{instruction}", 2)
+        except FileNotFoundError:
+            print("File not found.")
+            sys.exit(1)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -43,7 +82,6 @@ class CPU:
 
         for i in range(8):
             print(" %02X" % self.reg[i], end='')
-
         print()
 
     def run(self):
@@ -51,27 +89,11 @@ class CPU:
         self.pc = 0
         running = True
 
-        HLT = 1
-        LDI = 130
-        PRN = 71
-
         while running:
             command = self.ram_read(self.pc)
-
-            if command == HLT:
-                running = False
-                sys.exit(0)
-            elif command == LDI:
-                register = self.ram_read(self.pc + 1)
-                value = self.ram_read(self.pc + 2)
-                self.reg[register] = value
-                self.pc += 3
-            elif command == PRN:
-                reg = self.ram_read(self.pc+1)
-                print(self.reg[reg])
-                self.pc += 2
+            if command in self.branchtable:
+                self.branchtable[command]()
             else:
-                self.trace()
                 print(f"Unknown instruction: {command} at pc {self.pc}")
                 sys.exit(1)
 

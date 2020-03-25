@@ -29,6 +29,19 @@
 - duplicate hardware components
 - time sharing - not true parallelism, but concurrency by time sharing
 
-## System Bus
+## Bitwise Operations
 
--
+- work on numeric values, versus boolean only working with boolean values
+- AND, OR, NOT
+- XOR, NOR, NAND
+- bitwise operations apply to multibit numbers
+- need to know what a bitwise AND or a bitwise OR, going column by column
+- need to know how bitshifting works for sprint challenge
+
+## Stack
+
+- when handling interrupts, the entire CPU state is saved on the stack
+
+## Interrupts
+
+- when a peripheral needs to alert the CPU that it needs attention
