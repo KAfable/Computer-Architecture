@@ -6,6 +6,8 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+PUSH = 0b01000101
+SP = 7
 
 
 class CPU:
@@ -22,6 +24,10 @@ class CPU:
         self.branchtable[LDI] = self.handle_LDI
         self.branchtable[PRN] = self.handle_PRN
         self.branchtable[MUL] = self.handle_MUL
+        self.branchtable[PUSH] = self.handle_PUSH
+
+    def handle_PUSH(self):
+        self.reg[SP] -= 1
 
     def handle_HLT(self):
         sys.exit(0)
@@ -88,13 +94,14 @@ class CPU:
         """Run the CPU."""
         self.pc = 0
         running = True
+        self.reg[SP] = 244
 
         while running:
-            command = self.ram_read(self.pc)
-            if command in self.branchtable:
-                self.branchtable[command]()
+            op = self.ram_read(self.pc)
+            if op in self.branchtable:
+                self.branchtable[op]()
             else:
-                print(f"Unknown instruction: {command} at pc {self.pc}")
+                print(f"Unknown instruction: {op} at pc {self.pc}")
                 sys.exit(1)
 
     def ram_read(self, mar):
